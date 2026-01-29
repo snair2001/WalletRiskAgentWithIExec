@@ -41,14 +41,37 @@ export default function RiskDashboard({ walletAddress }: RiskDashboardProps) {
         const portfolio = await portfolioResponse.json()
         setPortfolioData(portfolio)
 
-        // Mock risk data (will be replaced with real analysis later)
-        const mockRiskData: RiskData = {
-          currentScore: 42,
-          confidence: 87,
-          severity: 'MEDIUM',
-          timestamp: Date.now()
+        // Call Python AI Agent
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+        const aiResponse = await fetch(`${apiUrl}/analyze`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            walletAddress,
+            portfolio: portfolio
+          })
+        })
+
+        if (!aiResponse.ok) {
+           throw new Error('AI Agent unreachable (Ensure api_server.py is running)')
         }
-        setRiskData(mockRiskData)
+
+        const aiResult = await aiResponse.json()
+
+        // Map AI result to RiskData
+        // Decision mapping: NO_ACTION->LOW, MONITOR->MEDIUM, etc.
+        let severity: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL' = 'LOW'
+        if (aiResult.decision === 'monitor') severity = 'MEDIUM' // Case sensitivity check?
+        if (aiResult.decision === 'MONITOR') severity = 'MEDIUM'
+        if (aiResult.decision === 'REQUEST_SEVERITY_ANALYSIS') severity = 'HIGH'
+        if (aiResult.decision === 'ENFORCE_ACTION') severity = 'CRITICAL'
+
+        setRiskData({
+          currentScore: aiResult.risk_score,
+          confidence: aiResult.confidence,
+          severity: severity,
+          timestamp: aiResult.timestamp * 1000
+        })
       } catch (err) {
         console.error('Error fetching dashboard data:', err)
         setError(err instanceof Error ? err.message : 'Failed to load data')

@@ -6,6 +6,7 @@ Provides contextual analysis for ambiguous cases using language models.
 
 import json
 from typing import Dict, Optional
+import openai
 from .models import WalletSignals, ProtocolHealthIndicators, MarketVolatilityFlags, DecisionType
 
 
@@ -188,17 +189,26 @@ Recent Liquidations (24h): {protocol.liquidation_events_24h}
         - Anthropic Claude
         - Open-source models via API
         """
-        # TODO: Implement actual LLM API call
-        # For now, return a mock response
-        
-        # This is a placeholder - real implementation would use:
-        # import openai
-        # response = openai.ChatCompletion.create(
-        #     model=self.model,
-        #     messages=[{"role": "user", "content": prompt}],
-        #     temperature=0.1,  # Low temperature for consistency
-        # )
-        # return json.loads(response.choices[0].message.content)
+        if self.api_key:
+            client = openai.OpenAI(api_key=self.api_key)
+            try:
+                response = client.chat.completions.create(
+                    model=self.model,
+                    messages=[{"role": "user", "content": prompt}],
+                    temperature=0.1,
+                    response_format={"type": "json_object"}
+                )
+                return json.loads(response.choices[0].message.content)
+            except Exception as e:
+                print(f"LLM Error: {e}")
+                # Fallback to mock if API fails
+                return {
+                    "risk_score": 65,
+                    "classification": "Error fallback",
+                    "decision": "MONITOR",
+                    "reasoning": f"LLM analysis failed: {str(e)}. Defaulting to monitor.",
+                    "confidence": 50
+                }
         
         return {
             "risk_score": 65,
