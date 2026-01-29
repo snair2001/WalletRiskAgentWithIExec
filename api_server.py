@@ -36,6 +36,10 @@ class AnalyzeRequest(BaseModel):
     walletAddress: str
     portfolio: Dict[str, Any]
 
+@app.get("/")
+def read_root():
+    return {"status": "active", "service": "Wallet Risk Analysis AI"}
+
 @app.post("/analyze")
 async def analyze_wallet(request: AnalyzeRequest):
     try:
