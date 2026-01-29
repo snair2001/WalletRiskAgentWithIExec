@@ -33,9 +33,28 @@ export default function RiskDashboard({ walletAddress }: RiskDashboardProps) {
         setLoading(true)
         setError(null)
 
-        // Fetch portfolio data from API
-        // Detect network from MetaMask (chainId 1 = mainnet, 11155111 = Sepolia)
-        const network = 'sepolia' // Change to 'mainnet' for production or detect from wallet
+        // Detect network from MetaMask
+        let network = 'sepolia' // default
+        if (typeof window !== 'undefined' && window.ethereum) {
+          try {
+            const chainId = await window.ethereum.request({ method: 'eth_chainId' })
+            // Chain ID mapping
+            const chainMap: Record<string, string> = {
+              '0x1': 'mainnet',      // Ethereum Mainnet
+              '0xaa36a7': 'sepolia'  // Sepolia Testnet
+            }
+            network = chainMap[chainId] || 'sepolia'
+            
+            // Warn if unsupported network
+            if (!chainMap[chainId]) {
+              console.warn(`Unsupported network detected (chainId: ${chainId}). Defaulting to Sepolia.`)
+              console.warn('Please switch to Ethereum Mainnet or Sepolia testnet in MetaMask')
+            }
+          } catch (e) {
+            console.error('Failed to detect network:', e)
+          }
+        }
+        
         const portfolioResponse = await fetch(`/api/portfolio/${walletAddress}?network=${network}`)
         if (!portfolioResponse.ok) {
           throw new Error('Failed to fetch portfolio data')
