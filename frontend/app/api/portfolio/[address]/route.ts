@@ -25,15 +25,14 @@ export async function GET(
         const { searchParams } = new URL(request.url)
         const network = searchParams.get('network') || 'mainnet'
 
-        // Configure API endpoints based on network
+        // Configure API endpoints based on network (using v2 with chainid)
         const etherscanApiKey = process.env.NEXT_PUBLIC_ETHERSCAN_API_KEY || 'YourApiKeyToken'
-        const baseUrl = network === 'sepolia'
-            ? 'https://api-sepolia.etherscan.io/v2/api'
-            : 'https://api.etherscan.io/v2/api'
+        const baseUrl = 'https://api.etherscan.io/v2/api'
+        const chainId = network === 'sepolia' ? '11155111' : '1' // Sepolia chainid = 11155111, Mainnet = 1
 
         // 1. Get ETH balance
         const balanceResponse = await fetch(
-            `${baseUrl}?module=account&action=balance&address=${walletAddress}&tag=latest&apikey=${etherscanApiKey}`
+            `${baseUrl}?chainid=${chainId}&module=account&action=balance&address=${walletAddress}&tag=latest&apikey=${etherscanApiKey}`
         )
         const balanceData = await balanceResponse.json()
         const ethBalance = balanceData.status === '1'
@@ -55,7 +54,7 @@ export async function GET(
 
         // 3. Get transaction history for wallet age and last activity
         const txResponse = await fetch(
-            `${baseUrl}?module=account&action=txlist&address=${walletAddress}&startblock=0&endblock=99999999&page=1&offset=10000&sort=asc&apikey=${etherscanApiKey}`
+            `${baseUrl}?chainid=${chainId}&module=account&action=txlist&address=${walletAddress}&startblock=0&endblock=99999999&page=1&offset=10000&sort=asc&apikey=${etherscanApiKey}`
         )
         const txData = await txResponse.json()
 
