@@ -28,8 +28,8 @@ export async function GET(
         // Configure API endpoints based on network
         const etherscanApiKey = process.env.NEXT_PUBLIC_ETHERSCAN_API_KEY || 'YourApiKeyToken'
         const baseUrl = network === 'sepolia'
-            ? 'https://api-sepolia.etherscan.io/api'
-            : 'https://api.etherscan.io/api'
+            ? 'https://api-sepolia.etherscan.io/v2/api'
+            : 'https://api.etherscan.io/v2/api'
 
         // 1. Get ETH balance
         const balanceResponse = await fetch(
