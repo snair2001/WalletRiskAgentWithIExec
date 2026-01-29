@@ -119,5 +119,6 @@ async def analyze_wallet(request: AnalyzeRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 if __name__ == "__main__":
-    print("Starting AI Agent API Server on port 8000...")
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    port = int(os.getenv("PORT", 8000))  # Render sets PORT dynamically
+    print(f"Starting AI Agent API Server on port {port}...")
+    uvicorn.run(app, host="0.0.0.0", port=port)
