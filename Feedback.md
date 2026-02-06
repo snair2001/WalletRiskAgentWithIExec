@@ -1,1 +1,1 @@
-We would like to continue working with IExec. Towards this, we request a small grant. Kindly let us know how we should proceed to apply for the grant. 
+We would like to continue our work with iExec and, toward this end, would like to request a small grant. Please let us know the appropriate next steps to apply.
